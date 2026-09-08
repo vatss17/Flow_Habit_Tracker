@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# test + screenshot output
+*.png
+*.gif
+test*.js
+diag.js
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# logs
+*.log
+npm-debug.log*

@@ -1,0 +1,1866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Flow — an AI habit tracker that detects and verifies habits from device signals instead of asking you to log them.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%AB%A7%3C/text%3E%3C/svg%3E">
+<title>Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ================= TOKENS ================= */
+  :root{
+    color-scheme: light;
+    --bg: #f7f3fc;
+    --bg-2: #f0eaf9;
+    --surface: #ffffff;
+    --surface-2: #fdfaff;
+    --ink: #34304d;
+    --ink-2: #6f6a8c;
+    --muted: #a79fc2;
+    --line: #ede8f8;
+    --line-2: #ddd4f0;
+
+    --lav: #cabef0;        --lav-soft: #f2edfc;   --lav-text: #7a68c9;   --lav-deep: #ab98e9;
+    --mint: #abe9d1;       --mint-soft: #e9f9f1;  --mint-text: #2f9473;
+    --sky: #bcdcf6;        --sky-soft: #ecf6fd;   --sky-text: #4a89b0;
+    --blush: #f7cad8;      --blush-soft: #fdeef2; --blush-text: #c06a8c;
+    --butter: #f9e5b6;     --butter-soft: #fdf7e8;--butter-text: #9c7a2e;
+    --gold: #f0cf7a;       --gold-soft: #fbf3dc;  --gold-text: #97742c;
+
+    --shadow-sm: 0 1px 2px rgba(64,52,110,.05), 0 4px 12px -6px rgba(64,52,110,.12);
+    --shadow: 0 2px 4px rgba(64,52,110,.05), 0 14px 30px -18px rgba(64,52,110,.28);
+
+    --r-lg: 22px; --r-md: 16px; --r-sm: 11px;
+
+    --f-display: "Quicksand", "Trebuchet MS", sans-serif;
+    --f-body: "Nunito Sans", -apple-system, "Segoe UI", sans-serif;
+    --f-mono: "DM Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg: #171630;
+      --bg-2: #131228;
+      --surface: #201f3c;
+      --surface-2: #262547;
+      --ink: #eeecfa;
+      --ink-2: #b8b3d4;
+      --muted: #8983a8;
+      --line: #2f2d54;
+      --line-2: #3d3a68;
+
+      --lav: #c3b6f5;      --lav-soft: #2b2857;   --lav-text: #c3b6f5;  --lav-deep: #a794ee;
+      --mint: #9ce4c7;     --mint-soft: #1c3b34;  --mint-text: #9ce4c7;
+      --sky: #aed4f5;      --sky-soft: #1d3247;   --sky-text: #aed4f5;
+      --blush: #f7c2d0;    --blush-soft: #3f2431; --blush-text: #f7c2d0;
+      --butter: #f8e2b0;   --butter-soft: #3a3020;--butter-text: #f8e2b0;
+      --gold: #f0cf7a;     --gold-soft: #3a3020;  --gold-text: #f0cf7a;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 6px 16px -10px rgba(0,0,0,.55);
+      --shadow: 0 2px 6px rgba(0,0,0,.35), 0 18px 36px -22px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg: #171630;
+    --bg-2: #131228;
+    --surface: #201f3c;
+    --surface-2: #262547;
+    --ink: #eeecfa;
+    --ink-2: #b8b3d4;
+    --muted: #8983a8;
+    --line: #2f2d54;
+    --line-2: #3d3a68;
+
+    --lav: #c3b6f5;      --lav-soft: #2b2857;   --lav-text: #c3b6f5;  --lav-deep: #a794ee;
+    --mint: #9ce4c7;     --mint-soft: #1c3b34;  --mint-text: #9ce4c7;
+    --sky: #aed4f5;      --sky-soft: #1d3247;   --sky-text: #aed4f5;
+    --blush: #f7c2d0;    --blush-soft: #3f2431; --blush-text: #f7c2d0;
+    --butter: #f8e2b0;   --butter-soft: #3a3020;--butter-text: #f8e2b0;
+    --gold: #f0cf7a;     --gold-soft: #3a3020;  --gold-text: #f0cf7a;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 6px 16px -10px rgba(0,0,0,.55);
+    --shadow: 0 2px 6px rgba(0,0,0,.35), 0 18px 36px -22px rgba(0,0,0,.7);
+  }
+
+  *{ box-sizing: border-box; }
+  [hidden]{ display:none !important; }
+  html{ scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+  body{
+    margin:0; background: var(--bg); color: var(--ink);
+    font-family: var(--f-body); font-size:15.5px; line-height:1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4{ font-family: var(--f-display); font-weight:700; margin:0; letter-spacing:-.01em; text-wrap:balance; }
+  p{ margin:0; }
+  button{ font-family: inherit; }
+  .mono{ font-family: var(--f-mono); }
+  .tnum{ font-variant-numeric: tabular-nums; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  /* ================= HEADER ================= */
+  .topbar{ position:sticky; top:0; z-index:60; background:color-mix(in oklab, var(--bg) 88%, transparent); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+  .topbar-in{ max-width:1180px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:var(--f-display); font-weight:700; font-size:20px; }
+  .brand-mark{ width:30px; height:30px; border-radius:10px; background:linear-gradient(140deg, var(--lav), var(--sky)); display:grid; place-items:center; font-size:15px; box-shadow:var(--shadow-sm); }
+  .brand small{ display:block; font-family:var(--f-body); font-weight:600; font-size:11.5px; color:var(--muted); letter-spacing:.02em; }
+
+  .tabs{ display:flex; gap:4px; background:var(--surface-2); border:1px solid var(--line); padding:4px; border-radius:999px; margin-left:auto; }
+  .tab{ border:0; background:transparent; color:var(--ink-2); padding:8px 15px; border-radius:999px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px; transition:background .18s ease, color .18s ease; }
+  .tab:hover{ color:var(--ink); }
+  .tab[aria-selected="true"]{ background:var(--surface); color:var(--lav-text); box-shadow:var(--shadow-sm); }
+  .tab:focus-visible, .btn:focus-visible, .chip-btn:focus-visible, input:focus-visible, select:focus-visible{ outline:2px solid var(--lav-deep); outline-offset:2px; }
+  .topbar-actions{ display:flex; gap:8px; align-items:center; }
+  @media (max-width:900px){
+    .tabs{ order:3; margin-left:0; width:100%; min-width:0; overflow-x:auto; }
+    .topbar-actions{ margin-left:auto; }
+  }
+
+  /* ================= BUTTONS ================= */
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid transparent; border-radius:999px;
+        padding:10px 18px; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; color:var(--ink);
+        transition:transform .12s ease, background .18s ease, border-color .18s ease, opacity .18s ease; }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--lav); color:#241f41; }
+  .btn-primary:hover{ background:var(--lav-deep); }
+  .btn-mint{ background:var(--mint); color:#173b31; }
+  .btn-soft{ background:var(--surface-2); border-color:var(--line); color:var(--ink); }
+  .btn-soft:hover{ border-color:var(--line-2); }
+  .btn-ghost{ background:transparent; border-color:var(--line-2); color:var(--ink-2); }
+  .btn-ghost:hover{ color:var(--ink); }
+  .btn-sm{ padding:7px 13px; font-size:13px; }
+  .btn:disabled{ opacity:.45; cursor:default; transform:none; }
+  .icon-btn{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; border:1px solid var(--line); background:var(--surface-2); cursor:pointer; color:var(--ink-2); font-size:14px; }
+  .icon-btn:hover{ color:var(--ink); border-color:var(--line-2); }
+
+  /* ================= HERO STRIP ================= */
+  .hero{ padding:26px 0 10px; }
+  .hero-in{ display:flex; align-items:flex-end; justify-content:space-between; gap:28px; flex-wrap:wrap; }
+  .hero h1{ font-size:clamp(26px,3.4vw,38px); line-height:1.12; }
+  .hero p{ color:var(--ink-2); max-width:52ch; margin-top:8px; font-size:15.5px; }
+  .stat-strip{ display:flex; gap:10px; flex-wrap:wrap; }
+  .stat-pill{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:10px 14px; min-width:104px; box-shadow:var(--shadow-sm); }
+  .stat-pill .k{ font-family:var(--f-mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .stat-pill .v{ font-family:var(--f-display); font-weight:700; font-size:21px; line-height:1.2; }
+
+  /* ================= LAYOUT ================= */
+  .view{ padding:22px 0 70px; }
+  .view[hidden]{ display:none !important; }
+  .grid{ display:grid; gap:16px; }
+  .grid > *, .col > *{ min-width:0; }
+  .g-main{ grid-template-columns: 1.45fr .95fr; align-items:start; }
+  .g-2{ grid-template-columns:1fr 1fr; }
+  .g-3{ grid-template-columns:repeat(3,1fr); }
+  .g-4{ grid-template-columns:repeat(4,1fr); }
+  .col{ display:grid; gap:16px; align-content:start; }
+  @media (max-width:1000px){ .g-main{ grid-template-columns:1fr; } .g-4{ grid-template-columns:1fr 1fr; } .g-3{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:660px){ .g-2,.g-3,.g-4{ grid-template-columns:1fr; } }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:20px; box-shadow:var(--shadow-sm); }
+  .card-plain{ background:var(--surface-2); box-shadow:none; }
+  .card-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .card-head h3{ font-size:16.5px; }
+  .card-label{ font-family:var(--f-mono); font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); }
+  .hint{ font-size:13px; color:var(--muted); }
+  .sec-title{ font-size:22px; margin-bottom:6px; }
+  .sec-lede{ color:var(--ink-2); max-width:62ch; margin-bottom:18px; }
+
+  /* ================= CHIPS / PILLS ================= */
+  .chip{ display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:4px 10px; font-size:12px; font-weight:700;
+         background:var(--surface-2); border:1px solid var(--line); color:var(--ink-2); }
+  .chip-mono{ font-family:var(--f-mono); font-weight:400; font-size:11.5px; }
+  .chip.lav{ background:var(--lav-soft); border-color:transparent; color:var(--lav-text); }
+  .chip.mint{ background:var(--mint-soft); border-color:transparent; color:var(--mint-text); }
+  .chip.sky{ background:var(--sky-soft); border-color:transparent; color:var(--sky-text); }
+  .chip.blush{ background:var(--blush-soft); border-color:transparent; color:var(--blush-text); }
+  .chip.butter{ background:var(--butter-soft); border-color:transparent; color:var(--butter-text); }
+  .chip.gold{ background:var(--gold-soft); border-color:transparent; color:var(--gold-text); }
+  .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; flex:none; }
+  .dot.live{ animation:breathe 2s ease-in-out infinite; }
+  @keyframes breathe{ 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:.4; transform:scale(.75);} }
+  .chip-btn{ cursor:pointer; }
+
+  /* ================= HABIT CARDS ================= */
+  .habit{ display:flex; gap:14px; align-items:flex-start; padding:15px; border:1px solid var(--line); border-radius:var(--r-md); background:var(--surface-2); }
+  .habit + .habit{ margin-top:10px; }
+  .habit-emoji{ width:42px; height:42px; border-radius:14px; display:grid; place-items:center; font-size:20px; background:var(--surface); border:1px solid var(--line); flex:none; }
+  .habit-body{ flex:1; min-width:0; }
+  .habit-top{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .habit-name{ font-family:var(--f-display); font-weight:700; font-size:16px; }
+  .habit-meta{ font-family:var(--f-mono); font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .habit-actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .bar{ height:8px; border-radius:999px; background:var(--lav-soft); overflow:hidden; margin-top:9px; }
+  .bar > span{ display:block; height:100%; border-radius:999px; background:var(--lav); transition:width .5s ease; }
+  .bar.is-done > span{ background:var(--mint); }
+  .habit.locked{ opacity:.72; }
+
+  /* ================= MONITOR ================= */
+  .monitor{ background:linear-gradient(165deg, var(--surface), var(--surface-2)); border:1px solid var(--line); border-radius:var(--r-lg); padding:20px; box-shadow:var(--shadow); }
+  .mon-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .mon-habit{ display:flex; align-items:center; gap:10px; }
+  .mon-habit .habit-emoji{ width:36px; height:36px; font-size:17px; border-radius:12px; }
+  .timer{ font-family:var(--f-mono); font-size:40px; font-weight:500; letter-spacing:.01em; font-variant-numeric:tabular-nums; margin:14px 0 8px; }
+  .timer small{ font-size:15px; color:var(--muted); }
+  .coach{ margin-top:12px; font-size:14.5px; color:var(--ink-2); min-height:22px; }
+  .coach b{ color:var(--ink); }
+  .ev-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; min-height:24px; }
+  .ev-chip{ font-family:var(--f-mono); font-size:11px; padding:3px 9px; border-radius:999px; background:var(--mint-soft); color:var(--mint-text); animation:pop .34s ease both; }
+  @keyframes pop{ from{ opacity:0; transform:translateY(5px) scale(.96);} to{ opacity:1; transform:none;} }
+  .mon-actions{ display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  .mon-foot{ display:flex; justify-content:space-between; gap:10px; margin-top:14px; padding-top:12px; border-top:1px dashed var(--line-2); font-family:var(--f-mono); font-size:11.5px; color:var(--muted); }
+  .mon-foot b{ color:var(--ink); }
+
+  /* ================= STREAM / FEED ================= */
+  .stream{ display:grid; grid-template-columns:minmax(0,1fr); gap:0; max-height:280px; overflow-y:auto; }
+  .stream-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:13px; animation:slidein .4s ease both; }
+  .stream-row:last-child{ border-bottom:0; }
+  @keyframes slidein{ from{ opacity:0; transform:translateY(-4px);} to{ opacity:1; transform:none;} }
+  .stream-row .src{ width:26px; height:26px; border-radius:9px; display:grid; place-items:center; background:var(--sky-soft); font-size:13px; flex:none; }
+  .stream-row .txt{ flex:1; min-width:0; font-family:var(--f-mono); font-size:12px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .stream-row .t{ font-family:var(--f-mono); font-size:11px; color:var(--muted); flex:none; }
+  .feed-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .feed-row:last-child{ border-bottom:0; }
+  .feed-row .fname{ flex:1; font-size:13.5px; font-weight:600; }
+  .empty{ text-align:center; padding:22px 10px; color:var(--muted); font-size:13.5px; }
+
+  /* ================= DEVICES ================= */
+  .device{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:12px; }
+  .device.connected{ border-color:color-mix(in oklab, var(--mint) 55%, var(--line)); }
+  .dev-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .dev-icon{ width:46px; height:46px; border-radius:15px; display:grid; place-items:center; font-size:22px; background:var(--sky-soft); flex:none; }
+  .device.connected .dev-icon{ background:var(--mint-soft); }
+  .dev-name{ font-family:var(--f-display); font-weight:700; font-size:16.5px; }
+  .dev-sub{ font-size:13px; color:var(--ink-2); }
+  .dev-sensors{ display:flex; flex-wrap:wrap; gap:5px; }
+  .pair-track{ height:6px; border-radius:999px; background:var(--sky-soft); overflow:hidden; }
+  .pair-fill{ height:100%; width:0%; border-radius:999px; background:var(--sky); transition:width .4s linear; }
+  .pair-note{ font-family:var(--f-mono); font-size:11.5px; color:var(--sky-text); }
+  .dev-live{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .dev-metric{ background:var(--surface-2); border-radius:var(--r-sm); padding:8px 10px; }
+  .dev-metric .k{ font-family:var(--f-mono); font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .dev-metric .v{ font-family:var(--f-mono); font-size:15px; font-weight:500; font-variant-numeric:tabular-nums; }
+  .unlocks{ font-size:12.5px; color:var(--ink-2); }
+  .unlocks b{ color:var(--ink); }
+
+  /* ================= TABLE ================= */
+  .table-scroll{ overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; font-size:14px; min-width:520px; }
+  th,td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ font-family:var(--f-mono); font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:400; }
+  tbody tr:last-child td{ border-bottom:0; }
+  td.dim{ color:var(--ink-2); }
+  .cmp-flow{ background:var(--lav-soft); }
+  .cmp-flow-head{ color:var(--lav-text) !important; }
+  td.yes{ color:var(--mint-text); font-weight:700; }
+  td.no{ color:var(--blush-text); }
+
+  /* ================= CHARTS ================= */
+  .chart{ display:flex; align-items:flex-end; gap:9px; height:126px; position:relative; margin-top:6px; }
+  .chart .target{ position:absolute; left:0; right:0; border-top:1.5px dashed var(--line-2); }
+  .chart .target span{ position:absolute; left:0; top:-16px; font-family:var(--f-mono); font-size:10px; color:var(--muted); background:var(--surface); padding-right:6px; }
+  .col-b{ flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:6px; }
+  .col-b .b{ width:100%; max-width:24px; border-radius:4px 4px 0 0; background:var(--lav); }
+  .col-b.low .b{ background:var(--lav-soft); }
+  .col-b .bv{ font-family:var(--f-mono); font-size:10px; color:var(--muted); }
+  .col-b .bd{ font-family:var(--f-mono); font-size:10.5px; color:var(--muted); }
+  .col-b.today .bv{ color:var(--ink); font-weight:500; }
+  .ring-row{ display:flex; align-items:center; gap:18px; }
+  .ring-v{ font-family:var(--f-display); font-weight:700; font-size:32px; }
+  .meter{ margin-top:12px; }
+  .meter-lab{ display:flex; justify-content:space-between; font-size:13px; color:var(--ink-2); margin-bottom:6px; }
+  .meter-lab b{ font-family:var(--f-mono); color:var(--ink); }
+  .meter-track{ height:8px; border-radius:999px; background:var(--lav-soft); overflow:hidden; }
+  .meter-track > span{ display:block; height:100%; border-radius:999px; background:var(--lav); }
+  .meter-track.m2{ background:var(--sky-soft); }
+  .meter-track.m2 > span{ background:var(--sky); }
+  .big-quote{ font-family:var(--f-display); font-weight:600; font-size:18px; line-height:1.45; }
+  .big-quote em{ font-style:normal; color:var(--lav-text); }
+
+  /* ================= LEADERBOARD ================= */
+  .lb-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .lb-group{ display:flex; align-items:center; gap:10px; }
+  .lb-group select{ width:auto; }
+  .lb-row{ display:flex; align-items:center; gap:14px; padding:13px 14px; border-radius:var(--r-md); background:var(--surface-2); border:1px solid var(--line); }
+  .lb-row + .lb-row{ margin-top:9px; }
+  .lb-row.you{ background:var(--lav-soft); border-color:color-mix(in oklab, var(--lav) 55%, var(--line)); }
+  .lb-rank{ width:26px; text-align:center; font-family:var(--f-mono); font-weight:500; color:var(--muted); flex:none; }
+  .lb-rank.medal{ font-size:18px; }
+  .lb-avatar{ width:38px; height:38px; border-radius:50%; display:grid; place-items:center; font-size:18px; background:var(--surface); border:1px solid var(--line); flex:none; }
+  .lb-body{ flex:1; min-width:0; }
+  .lb-name{ font-family:var(--f-display); font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:7px; }
+  .lb-meta{ font-family:var(--f-mono); font-size:11px; color:var(--muted); margin-top:2px; }
+  .lb-track{ height:6px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:7px; }
+  .lb-track > span{ display:block; height:100%; border-radius:999px; background:var(--lav); }
+  .lb-row.you .lb-track > span{ background:var(--lav-deep); }
+  .lb-score{ font-family:var(--f-display); font-weight:700; font-size:19px; text-align:right; flex:none; min-width:44px; }
+  .lb-score small{ display:block; font-family:var(--f-mono); font-weight:400; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+
+  /* ================= MANUAL ================= */
+  .steps{ display:grid; gap:12px; }
+  .step{ display:flex; gap:14px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:16px 18px; }
+  .step-n{ width:28px; height:28px; border-radius:50%; background:var(--lav-soft); color:var(--lav-text); display:grid; place-items:center; font-family:var(--f-mono); font-size:12px; flex:none; }
+  .step h4{ font-size:15.5px; margin-bottom:4px; }
+  .step p{ font-size:13.5px; color:var(--ink-2); }
+  .step .step-do{ margin-top:9px; }
+  .case{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:16px; }
+  .case .ci{ font-size:20px; }
+  .case h4{ font-size:14.5px; margin:8px 0 4px; }
+  .case p{ font-size:12.5px; color:var(--ink-2); }
+  .case .cw{ display:block; margin-top:9px; font-family:var(--f-mono); font-size:10.5px; color:var(--muted); }
+  .code{ font-family:var(--f-mono); font-size:12.5px; line-height:1.75; background:var(--bg-2); border:1px solid var(--line); border-radius:var(--r-md); padding:14px 16px; white-space:pre; overflow-x:auto; color:var(--ink-2); }
+  .code b{ color:var(--ink); font-weight:500; }
+  .code i{ color:var(--mint-text); font-style:normal; }
+  .pipe{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-family:var(--f-mono); font-size:12.5px; }
+  .pipe .node{ padding:8px 13px; border-radius:999px; background:var(--lav-soft); color:var(--lav-text); }
+  .pipe .arw{ color:var(--muted); }
+
+  /* ================= TOUR ================= */
+  .tour{ position:fixed; z-index:80; right:20px; bottom:20px; width:330px; max-width:calc(100vw - 32px);
+         background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:18px; }
+  .tour[hidden]{ display:none; }
+  .tour-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .tour-step{ font-family:var(--f-mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--lav-text); }
+  .tour h4{ font-size:16px; margin-bottom:6px; }
+  .tour p{ font-size:13.5px; color:var(--ink-2); }
+  .tour-acts{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .tour-dots{ display:flex; gap:5px; margin-top:12px; }
+  .tour-dots i{ width:6px; height:6px; border-radius:50%; background:var(--line-2); display:block; }
+  .tour-dots i.on{ background:var(--lav); }
+  .spot{ animation:spot 2.4s ease-in-out infinite; border-radius:var(--r-lg); }
+  @keyframes spot{ 0%,100%{ box-shadow:0 0 0 0 color-mix(in oklab, var(--lav) 55%, transparent);} 50%{ box-shadow:0 0 0 7px color-mix(in oklab, var(--lav) 22%, transparent);} }
+
+  /* ================= TOAST ================= */
+  .toasts{ position:fixed; z-index:90; left:50%; transform:translateX(-50%); bottom:24px; display:grid; gap:8px; width:max-content; max-width:calc(100vw - 32px); }
+  .toast{ background:var(--surface); border:1px solid var(--line-2); border-left:4px solid var(--mint); border-radius:var(--r-md); box-shadow:var(--shadow); padding:11px 16px; font-size:13.5px; display:flex; align-items:center; gap:9px; animation:toastin .3s ease both; }
+  .toast.lav{ border-left-color:var(--lav); }
+  .toast.sky{ border-left-color:var(--sky); }
+  .toast.butter{ border-left-color:var(--butter); }
+  @keyframes toastin{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:none;} }
+
+  /* ================= FORM ================= */
+  .form{ display:grid; gap:12px; }
+  .field{ display:grid; gap:5px; }
+  .field label{ font-family:var(--f-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  input[type="text"], input[type="number"], select{
+    font-family:var(--f-body); font-size:14px; color:var(--ink); background:var(--surface-2);
+    border:1px solid var(--line-2); border-radius:var(--r-sm); padding:9px 12px; width:100%;
+  }
+  .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .emoji-pick{ display:flex; gap:6px; flex-wrap:wrap; }
+  .emoji-pick button{ width:36px; height:36px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); font-size:17px; cursor:pointer; }
+  .emoji-pick button[aria-pressed="true"]{ border-color:var(--lav); background:var(--lav-soft); }
+
+  footer{ padding:26px 0 48px; border-top:1px solid var(--line); color:var(--muted); font-size:12.5px; text-align:center; }
+  footer b{ color:var(--ink-2); }
+</style>
+</head>
+<body>
+<!-- ================= TOPBAR ================= -->
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <span class="brand-mark">🫧</span>
+      <span>Flow<small>habit detection, not habit logging</small></span>
+    </div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-view="today" aria-selected="true">🌤️ Today</button>
+      <button class="tab" role="tab" data-view="devices" aria-selected="false">⌚ Devices</button>
+      <button class="tab" role="tab" data-view="insights" aria-selected="false">🌱 Insights</button>
+      <button class="tab" role="tab" data-view="leaderboard" aria-selected="false">🏆 Leaderboard</button>
+      <button class="tab" role="tab" data-view="manual" aria-selected="false">📖 Manual</button>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" id="tour-open">Guided tour</button>
+      <button class="icon-btn" id="reset-all" title="Reset the demo" aria-label="Reset the demo">↺</button>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <h1>Stop tracking. Start doing.</h1>
+      <p>Connect a watch, a band, your glasses or just this browser. Flow reads the signals they already produce, works out which habit you're doing, and verifies it — no logging, no streaks to protect.</p>
+    </div>
+    <div class="stat-strip" id="stat-strip"></div>
+  </div>
+</section>
+
+<!-- ================= TODAY ================= -->
+<main class="view wrap" id="view-today">
+  <div class="grid g-main">
+    <div class="col">
+      <div class="card" id="card-habits">
+        <div class="card-head">
+          <h3>Today's habits</h3>
+          <button class="btn btn-soft btn-sm" id="add-toggle">+ New habit</button>
+        </div>
+        <div id="add-form" hidden>
+          <div class="form card-plain card" style="margin-bottom:14px;">
+            <div class="field">
+              <label for="h-name">Habit name</label>
+              <input type="text" id="h-name" placeholder="e.g. Deep work" maxlength="28">
+            </div>
+            <div class="field">
+              <label>Icon</label>
+              <div class="emoji-pick" id="h-emoji"></div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label for="h-target">Daily target</label>
+                <input type="number" id="h-target" value="30" min="1" max="999">
+              </div>
+              <div class="field">
+                <label for="h-unit">Unit</label>
+                <select id="h-unit">
+                  <option value="min">minutes</option>
+                  <option value="steps">steps</option>
+                  <option value="glasses">glasses of water</option>
+                  <option value="h">hours</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="h-method">How should Flow detect it?</label>
+              <select id="h-method"></select>
+              <span class="hint" id="h-method-hint"></span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-primary btn-sm" id="h-save">Add habit</button>
+              <button class="btn btn-ghost btn-sm" id="h-cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <div id="habit-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Add a habit a normal tracker can't verify</h3>
+          <span class="card-label">one tap</span>
+        </div>
+        <p class="hint" style="margin-bottom:14px;">Each of these is verified by a different sensor. Add one — if its device isn't paired yet, Flow will tell you which one to connect.</p>
+        <div class="grid g-3" id="template-grid"></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="monitor" id="monitor">
+        <div class="mon-top">
+          <span class="card-label">Session monitor</span>
+          <span class="chip" id="mon-status"><span class="dot"></span><span id="mon-status-t">Idle</span></span>
+        </div>
+        <div class="mon-habit">
+          <span class="habit-emoji" id="mon-emoji">📚</span>
+          <div>
+            <div class="habit-name" id="mon-name">Study</div>
+            <div class="habit-meta" id="mon-target">target 30 min · verified by browser</div>
+          </div>
+        </div>
+        <div class="timer"><span id="mon-timer">00:00</span><small> / <span id="mon-goal">30:00</span></small></div>
+        <div class="bar"><span id="mon-bar" style="width:0%"></span></div>
+        <p class="coach" id="mon-coach">Pick a habit and press start — or just let a paired device notice you doing it.</p>
+        <div class="ev-row" id="mon-ev"></div>
+        <div class="mon-actions">
+          <button class="btn btn-primary btn-sm" id="mon-start">Start session</button>
+          <button class="btn btn-mint btn-sm" id="mon-resume" hidden>I'm back</button>
+          <button class="btn btn-ghost btn-sm" id="mon-stop" hidden>Reset</button>
+        </div>
+        <div class="mon-foot">
+          <span>confidence <b id="mon-conf">—</b></span>
+          <span id="mon-src">signals: browser</span>
+        </div>
+      </div>
+
+      <div class="card" id="card-stream">
+        <div class="card-head">
+          <h3>Live signal stream</h3>
+          <span class="chip sky" id="stream-count"><span class="dot live"></span>0 devices</span>
+        </div>
+        <div class="stream" id="stream"></div>
+      </div>
+
+      <div class="card" id="card-feed">
+        <div class="card-head">
+          <h3>Detected without asking you</h3>
+          <span class="card-label">zero taps</span>
+        </div>
+        <div id="feed"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ================= DEVICES ================= -->
+<main class="view wrap" id="view-devices" hidden>
+  <h2 class="sec-title">Your signal sources</h2>
+  <p class="sec-lede">Flow doesn't care which gadget you own. Every device is just evidence flowing into the same engine — pair one and watch what it unlocks. (All device data here is simulated for the demo; nothing is read from your real hardware.)</p>
+  <div class="grid g-3" id="device-grid"></div>
+
+  <div class="card" style="margin-top:22px;">
+    <div class="card-head"><h3>One evidence engine, any device</h3><span class="card-label">architecture</span></div>
+    <div class="pipe">
+      <span class="node">device</span><span class="arw">→</span>
+      <span class="node">raw signals</span><span class="arw">→</span>
+      <span class="node">evidence engine</span><span class="arw">→</span>
+      <span class="node">habit detection</span><span class="arw">→</span>
+      <span class="node">AI coach</span><span class="arw">→</span>
+      <span class="node">verified habit</span>
+    </div>
+    <div class="table-scroll" style="margin-top:16px;">
+      <table>
+        <thead><tr><th>Device</th><th>Raw signals</th><th>Habits it can verify</th></tr></thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- ================= INSIGHTS ================= -->
+<main class="view wrap" id="view-insights" hidden>
+  <h2 class="sec-title">What your behaviour is actually saying</h2>
+  <p class="sec-lede">Streaks tell you how many days you didn't fail. These numbers tell you when you succeed, how fast you come back, and whether your target was ever realistic.</p>
+  <div class="grid g-2">
+    <div class="col">
+      <div class="card" id="card-recovery">
+        <div class="card-head"><h3>Recovery score</h3><span class="card-label">instead of streaks</span></div>
+        <div class="ring-row">
+          <svg width="92" height="92" viewBox="0 0 92 92" aria-hidden="true">
+            <circle cx="46" cy="46" r="38" fill="none" stroke="var(--mint-soft)" stroke-width="10"></circle>
+            <circle id="ring-arc" cx="46" cy="46" r="38" fill="none" stroke="var(--mint)" stroke-width="10" stroke-linecap="round"
+                    stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)"></circle>
+          </svg>
+          <div>
+            <div class="ring-v" id="recovery-v">—</div>
+            <p class="hint" id="recovery-note">Working it out…</p>
+          </div>
+        </div>
+        <div class="meter">
+          <div class="meter-lab"><span>Missed days you returned from within 24h</span><b id="rec-ratio">—</b></div>
+          <div class="meter-track"><span id="rec-bar" style="width:0%"></span></div>
+        </div>
+      </div>
+
+      <div class="card" id="card-chart">
+        <div class="card-head"><h3 id="chart-title">Last 7 days</h3>
+          <select id="chart-habit" style="max-width:170px;"></select>
+        </div>
+        <div class="chart" id="chart"></div>
+      </div>
+
+      <div class="card" id="card-when">
+        <div class="card-head"><h3>When you actually show up</h3><span class="card-label">time of day</span></div>
+        <div class="meter">
+          <div class="meter-lab"><span>Morning sessions completed</span><b id="am-v">—</b></div>
+          <div class="meter-track"><span id="am-bar" style="width:0%"></span></div>
+        </div>
+        <div class="meter">
+          <div class="meter-lab"><span>Evening sessions completed</span><b id="pm-v">—</b></div>
+          <div class="meter-track m2"><span id="pm-bar" style="width:0%"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" id="card-adaptive">
+        <div class="card-head"><h3>Adaptive goal</h3><span class="card-label">the target follows you</span></div>
+        <div id="adaptive-body"></div>
+      </div>
+
+      <div class="card" id="card-ai">
+        <div class="card-head"><h3>AI coach</h3><span class="chip lav" id="ai-mode">rule-based</span></div>
+        <div id="ai-body">
+          <p class="hint">Flow reads your session history and says one useful thing — not a motivational quote.</p>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" id="ai-ask">Read my week</button>
+          <button class="btn btn-ghost btn-sm" id="ai-stop" hidden>Stop</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Verified session log</h3><span class="card-label">with evidence</span></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Habit</th><th>Result</th><th>Source</th><th>Confidence</th></tr></thead>
+            <tbody id="log-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ================= LEADERBOARD ================= -->
+<main class="view wrap" id="view-leaderboard" hidden>
+  <div class="lb-head">
+    <div>
+      <h2 class="sec-title">Where you stand</h2>
+      <p class="sec-lede" style="margin-bottom:0;">Flow Score rewards showing up and coming back — not a perfect streak. Missing a day barely moves it; ghosting your habits does.</p>
+    </div>
+    <div class="lb-group">
+      <span class="hint">Peer group</span>
+      <select id="lb-group"></select>
+    </div>
+  </div>
+  <div class="grid g-main">
+    <div class="card" id="card-leaderboard">
+      <div class="card-head"><h3 id="lb-title">Study Squad</h3><span class="chip lav" id="lb-count">6 members</span></div>
+      <div id="lb-list"></div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <div class="card-head"><h3>Your Flow Score</h3><span class="card-label">this week</span></div>
+        <div class="ring-row">
+          <div class="ring-v" id="lb-your-score">—</div>
+          <div>
+            <p class="hint" id="lb-your-note">Working it out…</p>
+          </div>
+        </div>
+      </div>
+      <div class="card card-plain">
+        <div class="card-head"><h3>How it's scored</h3><span class="card-label">no all-or-nothing</span></div>
+        <p class="hint">Flow Score blends how often your habits get verified with your recovery rate — how fast you return after a miss. A rough week doesn't erase a good month.</p>
+        <div class="code" style="margin-top:12px; font-size:11.5px;">flow_score =
+  0.7 × verified_rate
+  + 0.3 × recovery_rate</div>
+        <p class="hint" style="margin-top:12px;">Friends here are simulated for the demo — inviting real ones is Phase 2.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ================= MANUAL ================= -->
+<main class="view wrap" id="view-manual" hidden>
+  <h2 class="sec-title">The manual</h2>
+  <p class="sec-lede">Everything on this page is running for real (with simulated sensors). Here's how it works, and where it stops being a habit tracker and starts being something else.</p>
+
+  <div class="card" style="margin-bottom:22px;">
+    <div class="card-head"><h3>How Flow works, in six steps</h3><span class="card-label">follow along</span></div>
+    <div class="steps" id="manual-steps"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:22px;" id="card-cmp">
+    <div class="card-head"><h3>Flow vs. the habit tracker you deleted</h3><span class="card-label">side by side</span></div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>What matters</th><th>Typical habit tracker</th><th class="cmp-flow-head">Flow</th></tr></thead>
+        <tbody id="cmp-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:22px;">
+    <div class="card-head"><h3>Things only Flow can verify</h3><span class="card-label">use cases</span></div>
+    <p class="hint" style="margin-bottom:14px;">A checkbox app can only record what you claim. With signals, these all become measurable — and each one is a habit you can add on the Today tab.</p>
+    <div class="grid g-4" id="case-grid"></div>
+  </div>
+
+  <div class="grid g-2">
+    <div class="card">
+      <div class="card-head"><h3>Under the hood</h3><span class="card-label">evidence model</span></div>
+      <p class="hint" style="margin-bottom:12px;">A habit isn't a boolean. Every completion carries what was observed and how sure Flow is — so a verified habit can be audited, and a shaky one can be re-checked.</p>
+      <div class="code" id="evidence-code">habit_status: <i>verified</i>
+confidence: <b>0.94</b>
+evidence: [
+  <b>"session_duration"</b>,
+  <b>"active_window"</b>,
+  <b>"minimal_phone_activity"</b>
+]
+verified_by: <b>"laptop + phone"</b></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>What's real, what's simulated</h3><span class="card-label">honesty</span></div>
+      <p style="font-size:14px; color:var(--ink-2);">Judges deserve the straight answer, so:</p>
+      <div style="display:grid; gap:9px; margin-top:12px;">
+        <div class="chip mint" style="width:fit-content;">Real — the detection engine, evidence scoring, recovery maths, adaptive goals, the AI coach</div>
+        <div class="chip sky" style="width:fit-content;">Real — habit state persists in your browser between visits</div>
+        <div class="chip butter" style="width:fit-content;">Simulated — watch / band / glasses sensor streams and pairing</div>
+        <div class="chip blush" style="width:fit-content;">Not collected — no camera, mic, location or health data is read</div>
+      </div>
+      <p class="hint" style="margin-top:14px;">Phase 2 swaps the simulated stream for real device APIs. Nothing else in the architecture has to change — that's the point of an evidence engine.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ================= TOUR + TOASTS ================= -->
+<aside class="tour" id="tour" hidden aria-live="polite">
+  <div class="tour-top">
+    <span class="tour-step" id="tour-step">Step 1 of 6</span>
+    <button class="icon-btn" id="tour-close" title="Close the tour" aria-label="Close the tour">✕</button>
+  </div>
+  <h4 id="tour-title">Welcome to Flow</h4>
+  <p id="tour-body">Text</p>
+  <div class="tour-acts">
+    <button class="btn btn-primary btn-sm" id="tour-do">Show me</button>
+    <button class="btn btn-ghost btn-sm" id="tour-next">Skip</button>
+  </div>
+  <div class="tour-dots" id="tour-dots"></div>
+</aside>
+<div class="toasts" id="toasts"></div>
+
+<footer>
+  <div class="wrap">
+    <b>Flow — stop tracking, start doing.</b><br>
+    Hackathon prototype. Device sensors are simulated; your habits are stored only in this browser.
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   FLOW — working prototype
+   State → render, a simulated multi-device evidence engine, and a tour.
+   ===================================================================== */
+(function(){
+  "use strict";
+
+  /* ---------------- catalogues ---------------- */
+  var DEVICES = [
+    { id:"laptop", name:"This laptop", emoji:"💻", sub:"Browser + active window signals",
+      sensors:["active_window","tab_focus","keyboard_activity"],
+      metrics:[["focus","—"],["tab","—"]],
+      verifies:"Study, deep work, screen-free blocks", always:true },
+    { id:"watch",  name:"Smartwatch", emoji:"⌚", sub:"Heart rate, motion, workouts",
+      sensors:["heart_rate","motion","workout","hrv"],
+      metrics:[["bpm","—"],["move","—"]],
+      verifies:"Gym, runs, meditation, standing breaks" },
+    { id:"band",   name:"Smartband", emoji:"📿", sub:"Steps, sleep stages, stress",
+      sensors:["steps","sleep_stage","stress","spo2"],
+      metrics:[["steps","—"],["sleep","—"]],
+      verifies:"Walking, sleep consistency, wind-down" },
+    { id:"glasses",name:"Smart glasses", emoji:"🕶️", sub:"Visual context and objects",
+      sensors:["visual_context","object_detect","gaze_dwell"],
+      metrics:[["seeing","—"],["dwell","—"]],
+      verifies:"Reading, hydration, posture, guitar practice" },
+    { id:"phone",  name:"Phone", emoji:"📱", sub:"Screen time, motion, place",
+      sensors:["screen_time","pickup_count","geo_place"],
+      metrics:[["screen","—"],["picks","—"]],
+      verifies:"No-phone dinners, commute walks, arriving at the gym" }
+  ];
+
+  var METHODS = {
+    laptop:{ label:"Laptop / browser activity", ev:["active_window","keyboard_activity","tab_focus"] },
+    watch:{ label:"Smartwatch (heart rate + motion)", ev:["heart_rate","motion","workout"] },
+    band:{ label:"Smartband (steps + sleep)", ev:["steps","motion","sleep_stage"] },
+    glasses:{ label:"Smart glasses (visual context)", ev:["visual_context","object_detect","gaze_dwell"] },
+    phone:{ label:"Phone (screen time + place)", ev:["screen_time","pickup_count","geo_place"] }
+  };
+
+  var TEMPLATES = [
+    { name:"Read a book",      emoji:"📖", target:20, unit:"min",     method:"glasses", why:"Glasses see a page, not a screen." },
+    { name:"Hydration",        emoji:"💧", target:8,  unit:"glasses", method:"glasses", why:"Counts the glass you actually drank." },
+    { name:"Gym session",      emoji:"🏋️", target:40, unit:"min",     method:"watch",   why:"Heart rate proves you trained." },
+    { name:"Meditate",         emoji:"🧘", target:10, unit:"min",     method:"watch",   why:"HRV shows you actually settled." },
+    { name:"10k steps",        emoji:"🚶", target:10000, unit:"steps",method:"band",    why:"Steps need no logging at all." },
+    { name:"Asleep by 12",     emoji:"😴", target:7,  unit:"h",       method:"band",    why:"Sleep stages, not a bedtime promise." },
+    { name:"Phone-free dinner",emoji:"🍽️", target:30, unit:"min",     method:"phone",   why:"Absence of pickups is the evidence." },
+    { name:"Posture check",    emoji:"🪑", target:120,unit:"min",     method:"glasses", why:"Head angle over a working session." },
+    { name:"Deep work",        emoji:"🎯", target:90, unit:"min",     method:"laptop",  why:"One window, no tab-hopping." }
+  ];
+
+  var EMOJIS = ["📚","🎯","📖","🏃","🧘","💧","🎸","🍎","🌙","✍️"];
+
+  var CMP = [
+    ["Getting a habit recorded","You open the app and tap a checkbox","A paired device notices and verifies it — zero taps"],
+    ["What a completion means","You said you did it","Evidence + a confidence score you can audit"],
+    ["Missing a day","🔥 Streak resets to zero","Recovery score: did you come back within 24h?"],
+    ["Unrealistic targets","Stays 60 min forever until you edit it","Flow spots the pattern and proposes one you'll actually clear"],
+    ["Coaching","A reminder at a fixed time","A nudge when it sees you drift mid-session"],
+    ["Habits it can handle","Anything you promise to self-report","Anything a sensor can witness — water, posture, sleep, phone-free time"],
+    ["Insight it gives you","4 / 7 completed","Your recovery rate, your best hours, and which target is fighting you"],
+    ["New hardware","A separate integration, or nothing","One more evidence source into the same engine"]
+  ];
+
+  var CASES = [
+    ["💧","Drinking water","Glasses recognise a glass reaching your mouth.","glasses · object_detect"],
+    ["🪑","Sitting upright","Gaze and head angle over a two-hour work block.","glasses · gaze_dwell"],
+    ["📖","Reading paper","Reading detected without a screen in front of you.","glasses · visual_context"],
+    ["🧘","Actually calming down","HRV rising, not just a timer running out.","watch · hrv"],
+    ["😴","Sleeping on time","Sleep onset from the band, not a bedtime promise.","band · sleep_stage"],
+    ["🍽️","Phone-free meals","Thirty minutes with zero pickups at home.","phone · pickup_count"],
+    ["🏋️","Training hard enough","Heart-rate zones say it was a real session.","watch · heart_rate"],
+    ["🚶","Walking meetings","Steps rising while a call is active.","band + laptop"]
+  ];
+
+  var LEADERBOARD_GROUPS = {
+    "Study Squad": [
+      { name:"Maya",   emoji:"🦋", verified:0.88, recovery:0.9  },
+      { name:"Jordan", emoji:"🐼", verified:0.79, recovery:0.75 },
+      { name:"Sam",    emoji:"🦊", verified:0.66, recovery:0.8  },
+      { name:"Priya",  emoji:"🐨", verified:0.6,  recovery:0.6  },
+      { name:"Alex",   emoji:"🐸", verified:0.45, recovery:0.55 }
+    ],
+    "Dorm Friends": [
+      { name:"Kai",    emoji:"🐙", verified:0.92, recovery:0.85 },
+      { name:"Nora",   emoji:"🦉", verified:0.7,  recovery:0.7  },
+      { name:"Theo",   emoji:"🐺", verified:0.52, recovery:0.65 },
+      { name:"Yuki",   emoji:"🐢", verified:0.4,  recovery:0.5  }
+    ]
+  };
+
+  var MANUAL = [
+    ["Pair a signal source","Your laptop is already a sensor. Add a watch, band, glasses or phone and each one starts streaming raw signals into Flow.","devices","Open Devices"],
+    ["Signals become evidence","Raw events (steps, heart rate, active window, objects in view) are scored, not just stored. Watch them arrive in the live stream.","today","Watch the stream"],
+    ["Flow works out the habit","When enough evidence lines up, Flow decides which habit is happening — and starts timing it for you.","today","Start a session"],
+    ["It coaches you mid-habit","If you drift away, Flow says so once, gently, and waits. No spam notifications at 8pm every day.","today","See the nudge"],
+    ["Completion gets verified","A finished habit carries its evidence and a confidence score, and lands in your log automatically.","insights","See the log"],
+    ["Your goals adapt","Miss a target repeatedly and Flow proposes one you'll actually hit. Miss a day and it measures how fast you return.","insights","See adaptive goals"]
+  ];
+
+  /* ---------------- state ---------------- */
+  var KEY = "flow.v2";
+  var state = null;
+  var timers = { session:null, devices:{}, auto:null };
+  var session = null;
+  var pairing = {};
+
+  function todayKey(){ var d=new Date(); return d.toISOString().slice(0,10); }
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+
+  function seed(){
+    var hist = [];
+    // three weeks of plausible history: [minutes, hour started]. Mornings land more often
+    // than evenings, and misses are usually followed by a return the next day.
+    var days = [
+      [31,9],[26,20],[34,8],[0,20],[32,9],[18,8],[30,20],
+      [33,9],[14,21],[35,8],[30,20],[22,9],[36,8],[30,9],
+      [0,20],[32,20],[12,9],[18,20],[30,8],[26,20],[33,9]
+    ];
+    var d = new Date();
+    for(var i=0;i<days.length;i++){
+      var day = new Date(d.getTime() - (days.length-1-i)*86400000);
+      var v = days[i][0];
+      hist.push({
+        id:uid(), habit:"Study", emoji:"📚", date:day.toISOString().slice(0,10),
+        value:v, target:30, unit:"min", status: v>=30 ? "verified" : (v===0 ? "missed" : "partial"),
+        source:"laptop", conf: v>=30 ? 0.94 : 0.71, hour: days[i][1]
+      });
+    }
+    // a reading habit that is quietly failing — this is what the adaptive goal picks up
+    var read = [[9,21],[12,21],[0,21],[8,9],[14,21],[6,21],[10,9]];
+    for(var j=0;j<read.length;j++){
+      var rd = new Date(d.getTime() - (read.length-1-j)*86400000);
+      hist.push({
+        id:uid(), habit:"Read a book", emoji:"📖", date:rd.toISOString().slice(0,10),
+        value:read[j][0], target:20, unit:"min", status: read[j][0]===0 ? "missed" : "partial",
+        source:"glasses", conf:0.66, hour:read[j][1]
+      });
+    }
+    return {
+      devices:{ laptop:true, watch:false, band:false, glasses:false, phone:false },
+      habits:[
+        { id:uid(), name:"Study",      emoji:"📚", target:30, unit:"min",  method:"laptop",  done:18, day:todayKey() },
+        { id:uid(), name:"Read a book",emoji:"📖", target:20, unit:"min",  method:"glasses", done:0,  day:todayKey() },
+        { id:uid(), name:"10k steps",  emoji:"🚶", target:10000,unit:"steps",method:"band",  done:2140, day:todayKey() }
+      ],
+      history:hist,
+      feed:[],
+      signals:[],
+      tourStep:0,
+      tourDone:false,
+      goalDecision:null
+    };
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(raw){
+        var s = JSON.parse(raw);
+        if(s && s.habits && s.devices){
+          // roll habit progress over to a new day
+          var rolled = s.habits.some(function(h){ return h.day !== todayKey(); });
+          s.habits.forEach(function(h){ if(h.day !== todayKey()){ h.day = todayKey(); h.done = 0; } });
+          if(rolled) s.feed = [];
+          s.signals = [];
+          s.feed = s.feed || [];
+          return s;
+        }
+      }
+    }catch(e){ /* private mode, blocked storage — fall through to seed */ }
+    return seed();
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
+  }
+
+  state = load();
+
+  /* ---------------- small helpers ---------------- */
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, html){ var n=document.createElement(tag); if(cls) n.className=cls; if(html!=null) n.innerHTML=html; return n; }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
+  function clock(){ var d=new Date(), h=d.getHours()%12||12, m=d.getMinutes(); return h+":"+(m<10?"0":"")+m+(d.getHours()>=12?"pm":"am"); }
+  function fmtMMSS(sec){ var m=Math.floor(sec/60), s=Math.floor(sec%60); return (m<10?"0":"")+m+":"+(s<10?"0":"")+s; }
+  function unitLabel(u){ return u==="min"?"min":u==="steps"?"steps":u==="glasses"?"glasses":"h"; }
+  function fmtVal(v,u){ return (u==="steps" ? Math.round(v).toLocaleString() : (Math.round(v*10)/10)) + " " + unitLabel(u); }
+  function devName(id){ for(var i=0;i<DEVICES.length;i++){ if(DEVICES[i].id===id) return DEVICES[i].name; } return id; }
+  function devEmoji(id){ for(var i=0;i<DEVICES.length;i++){ if(DEVICES[i].id===id) return DEVICES[i].emoji; } return "📡"; }
+  function connectedCount(){ var n=0; for(var k in state.devices){ if(state.devices[k]) n++; } return n; }
+
+  function toast(msg, kind){
+    var box = $("toasts");
+    while(box.children.length >= 3) box.removeChild(box.firstChild);
+    var t = el("div","toast"+(kind?" "+kind:""), msg);
+    box.appendChild(t);
+    setTimeout(function(){ t.style.transition="opacity .4s ease, transform .4s ease"; t.style.opacity="0"; t.style.transform="translateY(8px)";
+      setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 420); }, 3600);
+  }
+
+  /* ---------------- tabs ---------------- */
+  var VIEWS = ["today","devices","insights","leaderboard","manual"];
+  function showView(name){
+    VIEWS.forEach(function(v){
+      var node = $("view-"+v);
+      if(node) node.hidden = (v !== name);
+      var tab = document.querySelector('.tab[data-view="'+v+'"]');
+      if(tab) tab.setAttribute("aria-selected", String(v===name));
+    });
+    window.scrollTo({ top:0, behavior:"smooth" });
+    if(name==="insights") renderInsights();
+    if(name==="leaderboard") renderLeaderboard();
+  }
+  $("tabs").addEventListener("click", function(e){
+    var b = e.target.closest(".tab"); if(!b) return;
+    showView(b.getAttribute("data-view"));
+  });
+
+  /* ---------------- render: hero stats ---------------- */
+  function renderStats(){
+    var autoCount = state.feed.length;
+    var verified = state.habits.filter(function(h){ return h.done >= h.target; }).length;
+    var data = [
+      ["devices paired", connectedCount()+" / "+DEVICES.length],
+      ["habits tracked", String(state.habits.length)],
+      ["auto-detected today", String(autoCount)],
+      ["verified today", verified+" / "+state.habits.length]
+    ];
+    var box = $("stat-strip"); box.innerHTML = "";
+    data.forEach(function(d){
+      box.appendChild(el("div","stat-pill",'<div class="k">'+d[0]+'</div><div class="v tnum">'+d[1]+'</div>'));
+    });
+  }
+
+  /* ---------------- render: habits ---------------- */
+  function renderHabits(){
+    var list = $("habit-list"); list.innerHTML = "";
+    if(!state.habits.length){ list.appendChild(el("div","empty","No habits yet — add one above, or pick a template.")); return; }
+    state.habits.forEach(function(h){
+      var pct = Math.min(100, Math.round((h.done/h.target)*100));
+      var done = h.done >= h.target;
+      var locked = !state.devices[h.method];
+      var timed = (h.unit === "min");
+      var node = el("div","habit"+(locked?" locked":""));
+      node.innerHTML =
+        '<span class="habit-emoji">'+h.emoji+'</span>'+
+        '<div class="habit-body">'+
+          '<div class="habit-top">'+
+            '<span class="habit-name">'+esc(h.name)+'</span>'+
+            (done ? '<span class="chip mint"><span class="dot"></span>verified</span>'
+                  : locked ? '<span class="chip butter">needs '+esc(devName(h.method))+'</span>'
+                  : '<span class="chip sky"><span class="dot live"></span>watching</span>')+
+          '</div>'+
+          '<div class="habit-meta">'+fmtVal(h.done,h.unit)+' of '+fmtVal(h.target,h.unit)+' · '+esc(METHODS[h.method].label)+'</div>'+
+          '<div class="bar'+(done?" is-done":"")+'"><span style="width:'+pct+'%"></span></div>'+
+          '<div class="habit-actions"></div>'+
+        '</div>';
+      var acts = node.querySelector(".habit-actions");
+      if(locked){
+        var b1 = el("button","btn btn-soft btn-sm","Connect "+devName(h.method));
+        b1.addEventListener("click", function(){ showView("devices"); spotlight("dev-"+h.method); });
+        acts.appendChild(b1);
+      } else if(timed && !done){
+        var b2 = el("button","btn btn-primary btn-sm","Start session");
+        b2.addEventListener("click", function(){ startSession(h.id); });
+        acts.appendChild(b2);
+      } else if(!done){
+        var b3 = el("button","btn btn-soft btn-sm","Auto-verified by "+devName(h.method));
+        b3.disabled = true;
+        acts.appendChild(b3);
+      }
+      var del = el("button","btn btn-ghost btn-sm","Remove");
+      del.addEventListener("click", function(){
+        state.habits = state.habits.filter(function(x){ return x.id !== h.id; });
+        if(session && session.habitId===h.id) resetSession();
+        save(); renderHabits(); renderStats(); renderChartPicker();
+      });
+      acts.appendChild(del);
+      list.appendChild(node);
+    });
+  }
+
+  function renderTemplates(){
+    var g = $("template-grid"); g.innerHTML = "";
+    TEMPLATES.forEach(function(t){
+      var have = state.habits.some(function(h){ return h.name === t.name; });
+      var card = el("div","case");
+      card.innerHTML = '<div class="ci">'+t.emoji+'</div><h4>'+esc(t.name)+'</h4><p>'+esc(t.why)+'</p>'+
+                       '<span class="cw">'+t.target.toLocaleString()+' '+unitLabel(t.unit)+' · '+esc(devName(t.method))+'</span>';
+      var btn = el("button","btn "+(have?"btn-soft":"btn-primary")+" btn-sm", have?"Added":"Add habit");
+      btn.style.marginTop = "10px";
+      btn.disabled = have;
+      btn.addEventListener("click", function(){
+        state.habits.push({ id:uid(), name:t.name, emoji:t.emoji, target:t.target, unit:t.unit, method:t.method, done:0, day:todayKey() });
+        save(); renderHabits(); renderTemplates(); renderStats(); renderChartPicker();
+        if(state.devices[t.method]) toast("Added "+t.name+" — "+devName(t.method)+" will verify it.","lav");
+        else toast("Added "+t.name+" — connect "+devName(t.method)+" to start verifying it.","sky");
+      });
+      card.appendChild(btn);
+      g.appendChild(card);
+    });
+  }
+
+  /* ---------------- add-habit form ---------------- */
+  var chosenEmoji = EMOJIS[0];
+  function renderEmojiPicker(){
+    var box = $("h-emoji"); box.innerHTML = "";
+    EMOJIS.forEach(function(e){
+      var b = el("button",null,e);
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(e===chosenEmoji));
+      b.addEventListener("click", function(){ chosenEmoji = e; renderEmojiPicker(); });
+      box.appendChild(b);
+    });
+  }
+  function renderMethodSelect(){
+    var sel = $("h-method"); sel.innerHTML = "";
+    Object.keys(METHODS).forEach(function(k){
+      var o = el("option",null, METHODS[k].label + (state.devices[k] ? "" : " — not paired"));
+      o.value = k;
+      sel.appendChild(o);
+    });
+    methodHint();
+  }
+  function methodHint(){
+    var v = $("h-method").value;
+    $("h-method-hint").textContent = state.devices[v]
+      ? devName(v)+" is paired — Flow can verify this habit right away."
+      : devName(v)+" isn't paired yet. You can still add the habit; it will wait for the device.";
+  }
+  $("h-method").addEventListener("change", methodHint);
+  $("add-toggle").addEventListener("click", function(){
+    var f = $("add-form"); f.hidden = !f.hidden;
+    if(!f.hidden){ renderEmojiPicker(); renderMethodSelect(); $("h-name").focus(); }
+  });
+  $("h-cancel").addEventListener("click", function(){ $("add-form").hidden = true; });
+  $("h-save").addEventListener("click", function(){
+    var name = $("h-name").value.trim() || "New habit";
+    var target = Math.max(1, parseInt($("h-target").value,10) || 30);
+    state.habits.push({ id:uid(), name:name, emoji:chosenEmoji, target:target, unit:$("h-unit").value, method:$("h-method").value, done:0, day:todayKey() });
+    $("h-name").value = "";
+    $("add-form").hidden = true;
+    save(); renderHabits(); renderStats(); renderChartPicker();
+    toast("“"+name+"” added. Flow is watching for it.","lav");
+  });
+
+  /* ---------------- devices ---------------- */
+  var deviceMetrics = {};
+  function renderDevices(){
+    var g = $("device-grid"); g.innerHTML = "";
+    DEVICES.forEach(function(d){
+      var on = !!state.devices[d.id];
+      if(on && !deviceMetrics[d.id] && METRIC_UPDATES[d.id]) deviceMetrics[d.id] = METRIC_UPDATES[d.id]();
+      var card = el("div","device"+(on?" connected":""));
+      card.id = "dev-"+d.id;
+      card.innerHTML =
+        '<div class="dev-top">'+
+          '<span class="dev-icon">'+d.emoji+'</span>'+
+          '<span class="chip '+(on?"mint":"")+'">'+(on?'<span class="dot live"></span>streaming':'not paired')+'</span>'+
+        '</div>'+
+        '<div><div class="dev-name">'+d.name+'</div><div class="dev-sub">'+d.sub+'</div></div>'+
+        '<div class="dev-sensors">'+d.sensors.map(function(s){ return '<span class="chip chip-mono">'+s+'</span>'; }).join("")+'</div>'+
+        (on ? '<div class="dev-live">'+d.metrics.map(function(m){
+                var live = deviceMetrics[d.id] || {};
+                return '<div class="dev-metric" data-metric="'+m[0]+'"><div class="k">'+m[0]+'</div><div class="v tnum">'+(live[m[0]]!=null?live[m[0]]:m[1])+'</div></div>';
+              }).join("")+'</div>' : '')+
+        '<div class="unlocks">Verifies: <b>'+d.verifies+'</b></div>'+
+        '<div class="pair" hidden><div class="pair-track"><div class="pair-fill"></div></div><div class="pair-note"></div></div>';
+      var act = el("div");
+      if(d.always){
+        var chip = el("span","chip mint",'<span class="dot"></span>always on — this page is a sensor');
+        act.appendChild(chip);
+      } else if(on){
+        var dis = el("button","btn btn-ghost btn-sm","Disconnect");
+        dis.addEventListener("click", function(){ disconnect(d.id); });
+        act.appendChild(dis);
+      } else {
+        var con = el("button","btn btn-primary btn-sm","Connect "+d.name);
+        con.addEventListener("click", function(){ pair(d.id); });
+        act.appendChild(con);
+      }
+      card.appendChild(act);
+      g.appendChild(card);
+    });
+
+    var mb = $("matrix-body"); mb.innerHTML = "";
+    DEVICES.forEach(function(d){
+      var tr = el("tr", null,
+        '<td><b>'+d.emoji+' '+d.name+'</b>'+(state.devices[d.id]?' <span class="chip mint" style="margin-left:6px;">paired</span>':'')+'</td>'+
+        '<td class="dim mono" style="font-size:12px;">'+d.sensors.join(", ")+'</td>'+
+        '<td class="dim">'+d.verifies+'</td>');
+      mb.appendChild(tr);
+    });
+    $("stream-count").innerHTML = '<span class="dot live"></span>'+connectedCount()+(connectedCount()===1?" device":" devices");
+  }
+
+  function pair(id){
+    if(pairing[id]) return;
+    pairing[id] = true;
+    var card = $("dev-"+id);
+    var wrap = card.querySelector(".pair");
+    var fill = card.querySelector(".pair-fill");
+    var note = card.querySelector(".pair-note");
+    wrap.hidden = false;
+    var phases = ["searching for "+devName(id).toLowerCase()+"…","handshake ok — reading sensor list…","syncing last 24h of signals…"];
+    var i = 0, pct = 0;
+    note.textContent = phases[0];
+    var iv = setInterval(function(){
+      pct += 8;
+      fill.style.width = Math.min(100,pct)+"%";
+      if(pct>=34 && i===0){ i=1; note.textContent = phases[1]; }
+      if(pct>=70 && i===1){ i=2; note.textContent = phases[2]; }
+      if(pct>=100){
+        clearInterval(iv);
+        pairing[id] = false;
+        state.devices[id] = true;
+        save();
+        renderDevices(); renderHabits(); renderStats(); renderTemplates();
+        startDeviceStream(id);
+        toast(devEmoji(id)+" "+devName(id)+" paired — "+DEVICES.filter(function(d){return d.id===id;})[0].sensors.length+" new signal types online.","sky");
+      }
+    }, 90);
+  }
+
+  function disconnect(id){
+    state.devices[id] = false;
+    if(timers.devices[id]){ clearInterval(timers.devices[id]); delete timers.devices[id]; }
+    save(); renderDevices(); renderHabits(); renderStats();
+    toast(devName(id)+" disconnected. Habits it verified are waiting for it.","lav");
+  }
+
+  /* ---------------- signal stream ---------------- */
+  var SIGNAL_SCRIPTS = {
+    laptop: function(){ return [
+      "active_window: “Lecture notes — Chapter 4”",
+      "tab_focus: 1 tab, 12m 04s uninterrupted",
+      "keyboard_activity: 61 wpm, steady",
+      "active_window: study app in foreground"
+    ]; },
+    watch: function(){ return [
+      "heart_rate: 78 bpm resting",
+      "motion: low, seated",
+      "hrv: 62 ms (calm)",
+      "workout: none active"
+    ]; },
+    band: function(){ return [
+      "steps: +"+(80+Math.floor(Math.random()*160))+" in last 5 min",
+      "stress: low",
+      "sleep_stage: last night 7h 12m, 92% consistency",
+      "spo2: 98%"
+    ]; },
+    glasses: function(){ return [
+      "visual_context: printed page, 40cm",
+      "object_detect: water glass → mouth",
+      "gaze_dwell: 6m 22s on text",
+      "visual_context: no screen in field of view"
+    ]; },
+    phone: function(){ return [
+      "pickup_count: 0 in last 18 min",
+      "screen_time: 4m since 6pm",
+      "geo_place: home",
+      "pickup_count: 1 (notification dismissed)"
+    ]; }
+  };
+  var METRIC_UPDATES = {
+    laptop: function(){ return { focus: (10+Math.floor(Math.random()*20))+"m", tab: "1 tab" }; },
+    watch:  function(){ return { bpm: (70+Math.floor(Math.random()*22))+"", move: Math.random()>.5?"seated":"light" }; },
+    band:   function(){ return { steps: (2000+Math.floor(Math.random()*6000)).toLocaleString(), sleep: "7h "+Math.floor(Math.random()*50)+"m" }; },
+    glasses:function(){ return { seeing: Math.random()>.5?"page":"room", dwell: (2+Math.floor(Math.random()*8))+"m" }; },
+    phone:  function(){ return { screen: (2+Math.floor(Math.random()*9))+"m", picks: String(Math.floor(Math.random()*3)) }; }
+  };
+
+  function pushSignal(devId, text){
+    state.signals.unshift({ dev:devId, text:text, t:clock() });
+    if(state.signals.length > 40) state.signals.pop();
+    renderStream();
+  }
+  function renderStream(){
+    var box = $("stream"); box.innerHTML = "";
+    if(!state.signals.length){
+      box.appendChild(el("div","empty","Nothing streaming yet. Pair a device on the Devices tab and signals land here live."));
+      return;
+    }
+    state.signals.slice(0,9).forEach(function(s){
+      box.appendChild(el("div","stream-row",
+        '<span class="src">'+devEmoji(s.dev)+'</span><span class="txt">'+esc(s.text)+'</span><span class="t">'+s.t+'</span>'));
+    });
+  }
+
+  function paintMetrics(id, vals){
+    deviceMetrics[id] = vals;
+    var card = $("dev-"+id);
+    if(!card) return;
+    Object.keys(vals).forEach(function(k){
+      var m = card.querySelector('[data-metric="'+k+'"] .v');
+      if(m) m.textContent = vals[k];
+    });
+  }
+
+  function startDeviceStream(id){
+    if(timers.devices[id]) clearInterval(timers.devices[id]);
+    var lines = SIGNAL_SCRIPTS[id] ? SIGNAL_SCRIPTS[id]() : ["signal"];
+    var n = 0;
+    if(METRIC_UPDATES[id]) paintMetrics(id, METRIC_UPDATES[id]());
+    pushSignal(id, lines[0]);
+    timers.devices[id] = setInterval(function(){
+      if(!state.devices[id]) return;
+      n++;
+      pushSignal(id, lines[n % lines.length]);
+      if(METRIC_UPDATES[id]) paintMetrics(id, METRIC_UPDATES[id]());
+    }, 4200 + Math.floor(Math.random()*1600));
+  }
+
+  /* ---------------- automatic detection (the whole point) ---------------- */
+  function autoDetectTick(){
+    var candidates = state.habits.filter(function(h){
+      return state.devices[h.method] && h.done < h.target && !(session && session.habitId===h.id);
+    });
+    if(!candidates.length) return;
+    var h = candidates[Math.floor(Math.random()*candidates.length)];
+    var add = h.unit==="steps" ? 600 + Math.floor(Math.random()*900)
+            : h.unit==="glasses" ? 1
+            : h.unit==="h" ? 1
+            : 4 + Math.floor(Math.random()*6);
+    h.done = Math.min(h.target, h.done + add);
+    var done = h.done >= h.target;
+    var label = h.emoji+" "+h.name+" — "+(h.unit==="steps"? "+"+add.toLocaleString()+" steps detected" : "+"+add+" "+unitLabel(h.unit)+" detected");
+    pushSignal(h.method, "habit_match: "+h.name.toLowerCase()+" (+"+add+" "+unitLabel(h.unit)+", conf 0."+(80+Math.floor(Math.random()*18))+")");
+    if(done){
+      completeHabit(h, "auto");
+    } else {
+      state.feed.unshift({ text:label, t:clock(), dev:h.method, conf:"0."+(80+Math.floor(Math.random()*18)) });
+      if(state.feed.length>12) state.feed.pop();
+    }
+    save(); renderHabits(); renderFeed(); renderStats();
+  }
+
+  function completeHabit(h, how){
+    h.done = h.target;
+    var conf = (how==="auto" ? 0.88 : 0.94) + Math.random()*0.05;
+    conf = Math.round(conf*100)/100;
+    state.feed.unshift({ text:h.emoji+" "+h.name+" — verified at "+fmtVal(h.target,h.unit), t:clock(), dev:h.method, conf:String(conf) });
+    if(state.feed.length>12) state.feed.pop();
+    state.history.push({
+      id:uid(), habit:h.name, emoji:h.emoji, date:todayKey(), value:h.target, target:h.target,
+      unit:h.unit, status:"verified", source:h.method, conf:conf, hour:new Date().getHours()
+    });
+    save(); renderFeed(); renderHabits(); renderStats(); renderInsights();
+    toast("✅ "+h.name+" verified automatically — evidence from "+devName(h.method)+".","");
+  }
+
+  function renderFeed(){
+    var box = $("feed"); box.innerHTML = "";
+    if(!state.feed.length){
+      box.appendChild(el("div","empty","Nothing detected yet today. Pair a device, or run a session — Flow fills this in on its own."));
+      return;
+    }
+    state.feed.slice(0,7).forEach(function(f){
+      box.appendChild(el("div","feed-row",
+        '<span class="src" style="width:26px;height:26px;border-radius:9px;display:grid;place-items:center;background:var(--mint-soft);font-size:13px;">'+devEmoji(f.dev)+'</span>'+
+        '<span class="fname">'+esc(f.text)+'</span>'+
+        '<span class="chip chip-mono">conf '+f.conf+'</span>'+
+        '<span class="t mono" style="font-size:11px;color:var(--muted);">'+f.t+'</span>'));
+    });
+  }
+
+  /* ---------------- live session ---------------- */
+  var STEP_SEC = 4, TICK_MS = 100;
+  function habitById(id){ for(var i=0;i<state.habits.length;i++){ if(state.habits[i].id===id) return state.habits[i]; } return null; }
+
+  function paintMonitor(){
+    var h = session ? habitById(session.habitId) : null;
+    if(!h){
+      $("mon-emoji").textContent = "🫧";
+      $("mon-name").textContent = "No session running";
+      $("mon-target").textContent = connectedCount()+" device(s) streaming · auto-detection on";
+      $("mon-timer").textContent = "00:00";
+      $("mon-goal").textContent = "00:00";
+      $("mon-bar").style.width = "0%";
+      return;
+    }
+    $("mon-emoji").textContent = h.emoji;
+    $("mon-name").textContent = h.name;
+    $("mon-target").textContent = "target "+fmtVal(h.target,h.unit)+" · verified by "+devName(h.method);
+    $("mon-goal").textContent = fmtMMSS(session.goalSec);
+    $("mon-src").textContent = "signals: "+METHODS[h.method].ev.slice(0,2).join(", ");
+  }
+
+  function setMonStatus(kind, text){
+    var pill = $("mon-status");
+    pill.className = "chip" + (kind ? " "+kind : "");
+    $("mon-status-t").textContent = text;
+    pill.querySelector(".dot").className = "dot" + (kind==="sky"||kind==="lav" ? " live" : "");
+  }
+
+  function resetSession(){
+    if(timers.session) clearInterval(timers.session);
+    timers.session = null; session = null;
+    $("mon-ev").innerHTML = "";
+    $("mon-coach").textContent = "Pick a habit and press start — or just let a paired device notice you doing it.";
+    $("mon-conf").textContent = "—";
+    $("mon-start").hidden = false;
+    $("mon-start").disabled = false;
+    $("mon-resume").hidden = true;
+    $("mon-stop").hidden = true;
+    setMonStatus("", "Idle");
+    paintMonitor();
+  }
+
+  function startSession(habitId){
+    var h = habitId ? habitById(habitId) : state.habits.filter(function(x){ return state.devices[x.method] && x.unit==="min" && x.done<x.target; })[0];
+    if(!h){ toast("No timed habit is ready — pair its device first.","butter"); return; }
+    if(!state.devices[h.method]){ toast("Connect "+devName(h.method)+" to run this one.","sky"); showView("devices"); spotlight("dev-"+h.method); return; }
+    if(timers.session) clearInterval(timers.session);
+    var remaining = Math.max(1, h.target - h.done);
+    session = {
+      habitId: h.id, sec:0, goalSec: (h.unit==="h" ? remaining*3600 : remaining*60),
+      fired:{}, paused:false, startedDone:h.done
+    };
+    $("mon-ev").innerHTML = "";
+    $("mon-start").hidden = true;
+    $("mon-stop").hidden = false;
+    $("mon-resume").hidden = true;
+    $("mon-conf").textContent = "—";
+    setMonStatus("sky","Sensing…");
+    $("mon-coach").textContent = "Reading "+METHODS[h.method].label.toLowerCase()+"…";
+    paintMonitor();
+    showView("today");
+    timers.session = setInterval(tickSession, TICK_MS);
+  }
+
+  function addEvidence(name){
+    if(!session || session.fired["ev_"+name]) return;
+    session.fired["ev_"+name] = true;
+    $("mon-ev").appendChild(el("span","ev-chip", name));
+  }
+
+  function tickSession(){
+    if(!session || session.paused) return;
+    var h = habitById(session.habitId);
+    if(!h){ resetSession(); return; }
+    session.sec = Math.min(session.goalSec, session.sec + STEP_SEC);
+    var pct = (session.sec/session.goalSec)*100;
+    $("mon-timer").textContent = fmtMMSS(session.sec);
+    $("mon-bar").style.width = pct+"%";
+
+    var ev = METHODS[h.method].ev;
+    if(!session.fired.detect && session.sec >= 12){
+      session.fired.detect = true;
+      setMonStatus("lav", h.name+" detected");
+      $("mon-coach").innerHTML = "<b>Detected.</b> Timing it for you — you don't need to do anything.";
+      addEvidence(ev[0]);
+    }
+    if(!session.fired.ev2 && session.sec >= 45){ session.fired.ev2 = true; addEvidence(ev[1]); }
+    if(!session.fired.mid && session.sec >= session.goalSec*0.3){
+      session.fired.mid = true;
+      $("mon-coach").innerHTML = "You're <b>"+Math.round(session.sec/60)+" min</b> in. "+Math.max(1,Math.round((session.goalSec-session.sec)/60))+" to go.";
+    }
+    if(!session.fired.drift && session.sec >= session.goalSec*0.45){
+      session.fired.drift = true;
+      session.paused = true;
+      setMonStatus("blush","Drifted");
+      $("mon-coach").innerHTML = "Signals went quiet — looks like you stepped away. No penalty. Ready when you are.";
+      $("mon-resume").hidden = false;
+      pushSignal(h.method, "attention_drop: signal gap 40s → session paused");
+      return;
+    }
+    if(!session.fired.ev3 && session.sec >= session.goalSec*0.8){
+      session.fired.ev3 = true;
+      addEvidence(ev[2] || "session_duration");
+      $("mon-coach").innerHTML = "Almost there — "+Math.max(1,Math.round((session.goalSec-session.sec)/60))+" min left.";
+    }
+    if(session.sec >= session.goalSec) finishSession();
+  }
+
+  function finishSession(){
+    if(timers.session) clearInterval(timers.session);
+    timers.session = null;
+    var h = habitById(session.habitId);
+    addEvidence("session_duration");
+    setMonStatus("mint","Verified");
+    $("mon-coach").innerHTML = "<b>Done. You showed up today.</b> Logged with evidence — nothing for you to tick.";
+    $("mon-conf").textContent = "0.96";
+    $("mon-resume").hidden = true;
+    $("mon-stop").hidden = false;
+    session = null;
+    if(h) completeHabit(h, "session");
+  }
+
+  $("mon-start").addEventListener("click", function(){ startSession(null); });
+  $("mon-resume").addEventListener("click", function(){
+    if(!session) return;
+    session.paused = false;
+    $("mon-resume").hidden = true;
+    setMonStatus("lav","Back on it");
+    $("mon-coach").innerHTML = "<b>Welcome back.</b> Picking up exactly where the signals stopped.";
+  });
+  $("mon-stop").addEventListener("click", resetSession);
+
+  /* ---------------- insights ---------------- */
+  function last7(habitName){
+    var out = [], now = new Date();
+    for(var i=6;i>=0;i--){
+      var d = new Date(now.getTime()-i*86400000);
+      var key = d.toISOString().slice(0,10);
+      var rows = state.history.filter(function(r){ return r.date===key && r.habit===habitName; });
+      var live = state.habits.filter(function(h){ return h.name===habitName; })[0];
+      var val = rows.reduce(function(a,r){ return Math.max(a, r.value); }, 0);
+      if(i===0 && live) val = Math.max(val, live.done);
+      out.push({ key:key, label:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()], value:val });
+    }
+    return out;
+  }
+
+  function recovery(){
+    var byDate = {};
+    state.history.forEach(function(r){ byDate[r.date] = byDate[r.date] || []; byDate[r.date].push(r); });
+    var dates = Object.keys(byDate).sort();
+    var misses = 0, returns = 0;
+    for(var i=0;i<dates.length;i++){
+      var dayRows = byDate[dates[i]];
+      var missed = dayRows.every(function(r){ return r.status !== "verified"; });
+      if(missed){
+        misses++;
+        var next = byDate[dates[i+1]];
+        if(next && next.some(function(r){ return r.status==="verified"; })) returns++;
+      }
+    }
+    var pct = misses ? Math.round((returns/misses)*100) : 100;
+    return { pct:pct, misses:misses, returns:returns };
+  }
+
+  function renderChartPicker(){
+    var sel = $("chart-habit");
+    var names = {};
+    state.habits.forEach(function(h){ names[h.name] = true; });
+    state.history.forEach(function(r){ names[r.habit] = true; });
+    var keep = sel.value;
+    sel.innerHTML = "";
+    Object.keys(names).forEach(function(n){
+      var o = el("option",null,n); o.value = n; sel.appendChild(o);
+    });
+    if(keep && names[keep]) sel.value = keep;
+  }
+
+  function renderChart(){
+    var name = $("chart-habit").value || (state.habits[0] && state.habits[0].name) || "Study";
+    var habit = state.habits.filter(function(h){ return h.name===name; })[0];
+    var hist = state.history.filter(function(r){ return r.habit===name; });
+    var target = habit ? habit.target : (hist.length ? hist[hist.length-1].target : 30);
+    var unit = habit ? habit.unit : (hist.length ? hist[hist.length-1].unit : "min");
+    var days = last7(name);
+    var max = Math.max(target, days.reduce(function(a,d){ return Math.max(a,d.value); },0)) * 1.25 || 1;
+    $("chart-title").textContent = "Last 7 days · target "+fmtVal(target,unit);
+    var box = $("chart"); box.innerHTML = "";
+    var tl = el("div","target",'<span>target</span>');
+    tl.style.bottom = Math.min(94,(target/max)*100)+"%";
+    box.appendChild(tl);
+    days.forEach(function(d,i){
+      var pct = Math.max(0,(d.value/max)*100);
+      var col = el("div","col-b"+(d.value<target?" low":"")+(i===6?" today":""));
+      col.innerHTML = '<span class="bv tnum">'+(unit==="steps" ? Math.round(d.value/1000)+"k" : Math.round(d.value))+'</span>'+
+                      '<div class="b" style="height:'+pct+'%"></div>'+
+                      '<span class="bd">'+d.label+'</span>';
+      box.appendChild(col);
+    });
+  }
+
+  function renderRecovery(){
+    var r = recovery();
+    var C = 2*Math.PI*38;
+    $("ring-arc").setAttribute("stroke-dashoffset", String(C*(1-r.pct/100)));
+    $("recovery-v").textContent = r.pct+"%";
+    $("recovery-note").textContent = r.misses
+      ? "You missed "+r.misses+" day"+(r.misses>1?"s":"")+" and came back next day after "+r.returns+" of them."
+      : "No missed days on record yet — nothing to recover from.";
+    $("rec-ratio").textContent = r.returns+" / "+r.misses;
+    $("rec-bar").style.width = r.pct+"%";
+  }
+
+  function renderWhen(){
+    var am = state.history.filter(function(r){ return r.hour < 12; });
+    var pm = state.history.filter(function(r){ return r.hour >= 12; });
+    function rate(rows){ return rows.length ? Math.round(rows.filter(function(r){ return r.status==="verified"; }).length/rows.length*100) : 0; }
+    var a = rate(am), p = rate(pm);
+    $("am-v").textContent = a+"%"; $("am-bar").style.width = a+"%";
+    $("pm-v").textContent = p+"%"; $("pm-bar").style.width = p+"%";
+  }
+
+  function suggestion(){
+    // find a habit whose recent average sits well below its target
+    var best = null;
+    state.habits.forEach(function(h){
+      // only judge a target once there's enough behaviour to judge it by
+      var logged = state.history.filter(function(r){ return r.habit === h.name; }).length;
+      if(logged < 4) return;
+      var days = last7(h.name);
+      var vals = days.map(function(d){ return d.value; });
+      var avg = vals.reduce(function(a,b){ return a+b; },0)/vals.length;
+      var hitRate = vals.filter(function(v){ return v>=h.target; }).length/vals.length;
+      if(avg < h.target*0.7 && hitRate <= 0.4){
+        var score = h.target - avg;
+        if(!best || score > best.score){
+          var step = h.unit==="steps" ? 500 : h.unit==="glasses" ? 1 : 5;
+          // never propose a token target: keep at least ~a third of what they set themselves
+          var floor = h.target * 0.35;
+          var suggested = Math.max(step, Math.round(Math.max(avg, floor)/step)*step);
+          if(suggested >= h.target) suggested = Math.max(step, Math.round((h.target*0.6)/step)*step);
+          best = { habit:h, avg:avg, suggested:suggested, score:score, hitRate:hitRate };
+        }
+      }
+    });
+    return best;
+  }
+
+  function renderAdaptive(){
+    var box = $("adaptive-body");
+    var s = suggestion();
+    box.innerHTML = "";
+    if(!s){
+      box.appendChild(el("p","hint","Your targets look about right for how you're actually behaving. Flow will speak up when a target and reality drift apart."));
+      return;
+    }
+    var h = s.habit;
+    if(state.goalDecision === h.id+":kept"){
+      box.appendChild(el("p","hint","Keeping "+fmtVal(h.target,h.unit)+" for "+h.name+". Flow will re-check after another low week."));
+      return;
+    }
+    var wrap = el("div");
+    wrap.innerHTML =
+      '<p class="big-quote">'+esc(h.name)+' is set to <em>'+fmtVal(h.target,h.unit)+'</em>, but you\'ve averaged <em>'+fmtVal(s.avg,h.unit)+'</em> and hit it '+Math.round(s.hitRate*100)+'% of days.</p>'+
+      '<p class="hint" style="margin-top:10px;">A target you miss most days stops being information. Flow suggests <b>'+fmtVal(s.suggested,h.unit)+'</b> — small enough to actually clear, then raised once you do.</p>';
+    var acts = el("div"); acts.style.cssText = "display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;";
+    var yes = el("button","btn btn-primary btn-sm","Set "+fmtVal(s.suggested,h.unit));
+    yes.addEventListener("click", function(){
+      h.target = s.suggested;
+      state.goalDecision = null;
+      save(); renderHabits(); renderInsights(); renderStats();
+      toast("Target for "+h.name+" is now "+fmtVal(s.suggested,h.unit)+".","lav");
+    });
+    var no = el("button","btn btn-ghost btn-sm","Keep "+fmtVal(h.target,h.unit));
+    no.addEventListener("click", function(){
+      state.goalDecision = h.id+":kept";
+      save(); renderAdaptive();
+    });
+    acts.appendChild(yes); acts.appendChild(no);
+    wrap.appendChild(acts);
+    box.appendChild(wrap);
+  }
+
+  function renderLog(){
+    var body = $("log-body"); body.innerHTML = "";
+    var rows = state.history.slice().reverse().slice(0,8);
+    if(!rows.length){ body.appendChild(el("tr",null,'<td colspan="4" class="dim">No sessions logged yet.</td>')); return; }
+    rows.forEach(function(r){
+      var chip = r.status==="verified" ? '<span class="chip mint">verified</span>'
+               : r.status==="missed" ? '<span class="chip blush">missed</span>'
+               : '<span class="chip butter">partial</span>';
+      body.appendChild(el("tr",null,
+        '<td><b>'+r.emoji+' '+esc(r.habit)+'</b><br><span class="dim mono" style="font-size:11px;">'+r.date+'</span></td>'+
+        '<td>'+chip+'<br><span class="dim mono" style="font-size:11px;">'+fmtVal(r.value, r.unit||"min")+'</span></td>'+
+        '<td class="dim">'+devEmoji(r.source)+' '+esc(devName(r.source))+'</td>'+
+        '<td class="mono tnum">'+(r.conf||"—")+'</td>'));
+    });
+  }
+
+  function localInsight(){
+    var lines = [];
+    var am = state.history.filter(function(r){ return r.hour<12; });
+    var pm = state.history.filter(function(r){ return r.hour>=12; });
+    function rate(rows){ return rows.length ? rows.filter(function(r){return r.status==="verified";}).length/rows.length : 0; }
+    var a = rate(am), p = rate(pm);
+    if(am.length && pm.length && Math.abs(a-p) > 0.1){
+      var better = a>p ? "mornings" : "evenings";
+      var factor = Math.round((Math.max(a,p)/Math.max(0.01,Math.min(a,p)))*10)/10;
+      lines.push("You finish habits "+factor+"× more often in the "+better+". Put the hard one there.");
+    }
+    var r = recovery();
+    lines.push(r.misses
+      ? "You've missed "+r.misses+" day"+(r.misses>1?"s":"")+" but returned the next day "+r.returns+" time"+(r.returns===1?"":"s")+" — a "+r.pct+"% recovery rate. That's the number that predicts whether this sticks."
+      : "No missed days on record — but Flow measures recovery, not perfection, so a miss won't cost you anything.");
+    var s = suggestion();
+    if(s) lines.push("“"+s.habit.name+"” is the one fighting you: averaging "+fmtVal(s.avg,s.habit.unit)+" against a "+fmtVal(s.habit.target,s.habit.unit)+" target. Drop it to "+fmtVal(s.suggested,s.habit.unit)+" and it becomes a habit instead of a debt.");
+    return lines;
+  }
+
+  function renderAI(list, note){
+    var box = $("ai-body"); box.innerHTML = "";
+    list.forEach(function(t){
+      var p = el("p", null, esc(t));
+      p.style.cssText = "font-size:14px; margin-bottom:10px; padding-left:12px; border-left:3px solid var(--lav);";
+      box.appendChild(p);
+    });
+    if(note) box.appendChild(el("p","hint", note));
+  }
+
+  function renderInsights(){
+    renderChartPicker(); renderChart(); renderRecovery(); renderWhen(); renderAdaptive(); renderLog();
+  }
+  $("chart-habit").addEventListener("change", renderChart);
+
+  /* ---------------- leaderboard ---------------- */
+  function verifiedRate(){
+    if(!state.history.length) return 0;
+    var verified = state.history.filter(function(r){ return r.status==="verified"; }).length;
+    return verified/state.history.length;
+  }
+  function flowScore(){
+    var vr = verifiedRate();
+    var rec = recovery().pct/100;
+    return Math.round((vr*0.7 + rec*0.3)*100);
+  }
+  function renderLeaderboardGroups(){
+    var sel = $("lb-group");
+    if(sel.options.length) return;
+    Object.keys(LEADERBOARD_GROUPS).forEach(function(g){
+      var o = el("option",null,g); o.value = g; sel.appendChild(o);
+    });
+  }
+  function renderLeaderboard(){
+    renderLeaderboardGroups();
+    var groupName = $("lb-group").value || Object.keys(LEADERBOARD_GROUPS)[0];
+    var peers = LEADERBOARD_GROUPS[groupName];
+    var you = { name:"You", emoji:"🫧", score:flowScore(), verified:verifiedRate(), recovery:recovery().pct/100, isYou:true };
+    var rows = peers.map(function(p){
+      return { name:p.name, emoji:p.emoji, score:Math.round((p.verified*0.7 + p.recovery*0.3)*100), verified:p.verified, recovery:p.recovery };
+    });
+    rows.push(you);
+    rows.sort(function(a,b){ return b.score - a.score; });
+
+    $("lb-title").textContent = groupName;
+    $("lb-count").textContent = rows.length+" members";
+
+    var max = Math.max.apply(null, rows.map(function(r){ return r.score; })) || 1;
+    var medals = ["🥇","🥈","🥉"];
+    var box = $("lb-list"); box.innerHTML = "";
+    rows.forEach(function(r, i){
+      var row = el("div","lb-row"+(r.isYou?" you":""));
+      var rankHtml = i<3 ? '<span class="lb-rank medal">'+medals[i]+'</span>' : '<span class="lb-rank">'+(i+1)+'</span>';
+      row.innerHTML =
+        rankHtml+
+        '<span class="lb-avatar">'+r.emoji+'</span>'+
+        '<div class="lb-body">'+
+          '<div class="lb-name">'+esc(r.name)+(r.isYou?' <span class="chip lav" style="padding:2px 8px;">you</span>':'')+'</div>'+
+          '<div class="lb-meta">verified '+Math.round(r.verified*100)+'% · recovery '+Math.round(r.recovery*100)+'%</div>'+
+          '<div class="lb-track"><span style="width:'+Math.round((r.score/max)*100)+'%"></span></div>'+
+        '</div>'+
+        '<div class="lb-score tnum">'+r.score+'<small>score</small></div>';
+      box.appendChild(row);
+    });
+
+    var yourRank = rows.findIndex(function(r){ return r.isYou; }) + 1;
+    $("lb-your-score").textContent = you.score;
+    $("lb-your-note").textContent = "#"+yourRank+" of "+rows.length+" in "+groupName+" — "+
+      (yourRank===1 ? "top of the group." : "keep verifying habits and recovering fast to climb.");
+  }
+  $("lb-group").addEventListener("change", renderLeaderboard);
+
+  /* ---------------- AI coach (real, when the viewer's Claude is reachable) ---------------- */
+  var sampleFn = null, aiCtl = null;
+  (function initSample(){
+    if(!window.claude || !window.claude.use) return;
+    window.claude.use("sample").then(function(fn){
+      if(!fn) return;
+      sampleFn = fn;
+      $("ai-mode").textContent = "live AI";
+      $("ai-mode").className = "chip mint";
+    }).catch(function(){ /* stay rule-based */ });
+  })();
+
+  function historySummary(){
+    var lines = state.habits.map(function(h){
+      var d = last7(h.name).map(function(x){ return x.value; }).join(",");
+      return h.name+" (target "+h.target+" "+h.unit+", verified by "+devName(h.method)+"): last 7 days = "+d;
+    });
+    var r = recovery();
+    lines.push("Missed days: "+r.misses+", returned next day: "+r.returns+" (recovery "+r.pct+"%).");
+    var am = state.history.filter(function(x){ return x.hour<12; }).length;
+    var pm = state.history.filter(function(x){ return x.hour>=12; }).length;
+    lines.push("Sessions before noon: "+am+", after noon: "+pm+".");
+    return lines.join("\n").slice(0, 4000);
+  }
+
+  $("ai-ask").addEventListener("click", function(){
+    var btn = $("ai-ask");
+    if(!sampleFn){
+      renderAI(localInsight(), "Computed on your own data, in this browser. Open this page inside Claude and Flow will ask a real model instead.");
+      toast("Insight generated from your session history.","lav");
+      return;
+    }
+    btn.disabled = true; $("ai-stop").hidden = false;
+    renderAI(["Reading your week…"]);
+    aiCtl = new AbortController();
+    sampleFn.json(
+      "You are the coach inside Flow, a habit app that detects habits from device sensors instead of asking users to log them. "+
+      "Here is one user's real data:\n\n"+historySummary()+
+      "\n\nReply with only JSON: {\"insights\":[\"...\",\"...\"],\"nudge\":\"...\"} — two short observations "+
+      "(specific, quantitative, drawn from these numbers, no motivational filler) and one concrete nudge for tomorrow. "+
+      "Each under 200 characters. Never suggest streaks.",
+      { modelTier:"quick", signal:aiCtl.signal }
+    ).then(function(data){
+      var out = [];
+      if(data && data.insights && data.insights.length) out = data.insights.map(String);
+      if(data && data.nudge) out.push("Tomorrow: "+String(data.nudge));
+      if(!out.length) out = localInsight();
+      renderAI(out, "Generated by Claude from the numbers above, in your browser session.");
+    }).catch(function(e){
+      renderAI(localInsight(), e && e.code==="not_granted"
+        ? "AI access wasn't granted, so this is Flow's own analysis of your data."
+        : "Couldn't reach the model just now — this is Flow's own analysis of your data.");
+    }).finally(function(){
+      btn.disabled = false; $("ai-stop").hidden = true; aiCtl = null;
+    });
+  });
+  $("ai-stop").addEventListener("click", function(){ if(aiCtl) aiCtl.abort(); });
+
+  /* ---------------- manual ---------------- */
+  function renderManual(){
+    var box = $("manual-steps"); box.innerHTML = "";
+    MANUAL.forEach(function(m, i){
+      var step = el("div","step");
+      step.innerHTML = '<span class="step-n">'+(i+1)+'</span><div><h4>'+m[0]+'</h4><p>'+m[1]+'</p><div class="step-do"></div></div>';
+      var b = el("button","btn btn-soft btn-sm", m[3]);
+      b.addEventListener("click", function(){
+        showView(m[2]);
+        if(i===2){ startSession(null); }
+        else if(i===1){ spotlight("card-stream"); }
+        else if(i===0){ spotlight("device-grid"); }
+        else if(i===3){ spotlight("monitor"); }
+        else if(i===4){ spotlight("card-recovery"); }
+        else { spotlight("card-adaptive"); }
+      });
+      step.querySelector(".step-do").appendChild(b);
+      box.appendChild(step);
+    });
+
+    var cmp = $("cmp-body"); cmp.innerHTML = "";
+    CMP.forEach(function(r){
+      cmp.appendChild(el("tr",null,'<td><b>'+r[0]+'</b></td><td class="dim">'+r[1]+'</td><td class="cmp-flow">'+r[2]+'</td>'));
+    });
+
+    var cases = $("case-grid"); cases.innerHTML = "";
+    CASES.forEach(function(c){
+      cases.appendChild(el("div","case",'<div class="ci">'+c[0]+'</div><h4>'+c[1]+'</h4><p>'+c[2]+'</p><span class="cw">'+c[3]+'</span>'));
+    });
+  }
+
+  function spotlight(id){
+    var node = $(id); if(!node) return;
+    document.querySelectorAll(".spot").forEach(function(n){ n.classList.remove("spot"); });
+    node.classList.add("spot");
+    setTimeout(function(){ try{ node.scrollIntoView({ behavior:"smooth", block:"center" }); }catch(e){ node.scrollIntoView(); } }, 60);
+    setTimeout(function(){ node.classList.remove("spot"); }, 6000);
+  }
+
+  /* ---------------- guided tour ---------------- */
+  var TOUR = [
+    { t:"Flow tracks you — not the other way round",
+      b:"Every habit app asks you to remember, open it and tick a box. Flow starts from the signals your devices already produce. Six steps and you'll see the difference.",
+      view:"today", act:"Start", target:"stat-strip" },
+    { t:"Pair a signal source",
+      b:"Your laptop is already a sensor. Add a smartband and Flow gains steps, sleep and stress — and can verify habits it couldn't before.",
+      view:"devices", act:"Pair the band for me", target:"dev-band",
+      run:function(){ if(!state.devices.band) pair("band"); } },
+    { t:"Raw signals arrive live",
+      b:"That's the band talking. Steps, stress, sleep — scored as evidence, not stored as numbers you have to interpret.",
+      view:"today", act:"Show the stream", target:"card-stream" },
+    { t:"A habit gets detected with zero taps",
+      b:"Flow matches the signals against your habits and moves the progress itself. Watch “10k steps” climb without you touching anything.",
+      view:"today", act:"Detect one now", target:"card-habits",
+      run:function(){ autoDetectTick(); autoDetectTick(); } },
+    { t:"It coaches you mid-habit",
+      b:"Start a study session. Around halfway Flow will notice the signals drop and check in once — gently, then it waits. No penalty, no streak to lose.",
+      view:"today", act:"Run a session", target:"monitor",
+      run:function(){ startSession(null); } },
+    { t:"Recovery, adaptive goals, real insight",
+      b:"Instead of a streak you get a recovery score, a target that follows your actual behaviour, and one useful sentence about your week.",
+      view:"insights", act:"See my insights", target:"card-recovery" },
+    { t:"Why it's different",
+      b:"The manual lays it out side by side with a normal tracker — and lists the habits only a sensor-driven tracker can verify at all.",
+      view:"manual", act:"Read the manual", target:"card-cmp" }
+  ];
+  var tourIdx = 0;
+
+  function renderTour(){
+    var s = TOUR[tourIdx];
+    $("tour-step").textContent = "Step "+(tourIdx+1)+" of "+TOUR.length;
+    $("tour-title").textContent = s.t;
+    $("tour-body").textContent = s.b;
+    $("tour-do").textContent = s.act;
+    $("tour-next").textContent = tourIdx === TOUR.length-1 ? "Finish" : "Next";
+    var dots = $("tour-dots"); dots.innerHTML = "";
+    TOUR.forEach(function(_,i){ var d = el("i", i===tourIdx ? "on" : ""); dots.appendChild(d); });
+  }
+  function openTour(i){
+    tourIdx = i || 0;
+    $("tour").hidden = false;
+    renderTour();
+  }
+  function tourAdvance(){
+    if(tourIdx >= TOUR.length-1){ $("tour").hidden = true; state.tourDone = true; save(); toast("That's the tour. Everything on this page keeps running.","lav"); return; }
+    tourIdx++; renderTour();
+  }
+  $("tour-open").addEventListener("click", function(){ openTour(0); });
+  $("tour-close").addEventListener("click", function(){ $("tour").hidden = true; });
+  $("tour-next").addEventListener("click", tourAdvance);
+  $("tour-do").addEventListener("click", function(){
+    var s = TOUR[tourIdx];
+    showView(s.view);
+    if(s.run) s.run();
+    if(s.target) spotlight(s.target);
+    setTimeout(tourAdvance, 700);
+  });
+
+  /* ---------------- reset ---------------- */
+  $("reset-all").addEventListener("click", function(){
+    Object.keys(timers.devices).forEach(function(k){ clearInterval(timers.devices[k]); });
+    timers.devices = {};
+    if(timers.session) clearInterval(timers.session);
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    state = seed();
+    session = null;
+    renderAll();
+    resetSession();
+    bootStreams();
+    toast("Demo reset to a clean state.","lav");
+  });
+
+  /* ---------------- boot ---------------- */
+  function renderAll(){
+    renderStats(); renderHabits(); renderTemplates(); renderDevices(); renderStream(); renderFeed(); renderManual(); renderInsights(); renderLeaderboard();
+  }
+  function bootStreams(){
+    Object.keys(state.devices).forEach(function(id){ if(state.devices[id]) startDeviceStream(id); });
+    if(timers.auto) clearInterval(timers.auto);
+    timers.auto = setInterval(autoDetectTick, 9000);
+  }
+
+  renderAll();
+  resetSession();
+  bootStreams();
+  renderAI(localInsight(), "Computed from your own session history. Press “Read my week” any time.");
+  if(!state.tourDone) setTimeout(function(){ openTour(0); }, 900);
+
+})();
+</script>
+</body>
+</html>
